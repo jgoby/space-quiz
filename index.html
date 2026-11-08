@@ -371,6 +371,8 @@
     }
     .results h1 { font-size: 31px; }
     .results-copy { max-width: 360px; margin: 11px auto 23px; color: var(--muted); }
+    .result-duration { margin: 0 0 20px; color: var(--muted); }
+    .result-duration strong { color: var(--ink); }
     .result-score {
       display: inline-flex;
       align-items: baseline;
@@ -561,6 +563,15 @@
     let score = 0;
     let selectedIndex = null;
     let answered = false;
+    let missionStartedAt = performance.now();
+
+    function formatMissionDuration(totalSeconds) {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const minuteLabel = minutes === 1 ? "minute" : "minutes";
+      const secondLabel = seconds === 1 ? "second" : "seconds";
+      return `${minutes} ${minuteLabel} ${String(seconds).padStart(2, "0")} ${secondLabel}`;
+    }
 
     function renderQuestion() {
       const current = questions[currentIndex];
@@ -638,6 +649,8 @@
     }
 
     function showResults() {
+      const elapsedSeconds = Math.floor((performance.now() - missionStartedAt) / 1000);
+      const missionDuration = formatMissionDuration(elapsedSeconds);
       const percentage = score / questions.length;
       const reaction = percentage === 1 ? "🏆" : percentage >= .7 ? "🚀" : percentage >= .4 ? "🌟" : "🪐";
       const headline = percentage === 1 ? "Out of this world!" : percentage >= .7 ? "Stellar work!" : percentage >= .4 ? "Nice exploring!" : "Keep reaching for the stars!";
@@ -656,6 +669,7 @@
         <p class="eyebrow">Mission complete</p>
         <h1>${headline}</h1>
         <p class="results-copy">${message}</p>
+        <p class="result-duration">Mission duration: <strong>${missionDuration}</strong></p>
         <div class="result-score">${score}<small>out of ${questions.length} correct</small></div>
         <div><button class="primary" id="restart-button" type="button">Play again <span aria-hidden="true">↻</span></button></div>
       `;
@@ -665,6 +679,7 @@
     function restartQuiz() {
       currentIndex = 0;
       score = 0;
+      missionStartedAt = performance.now();
       resultsView.hidden = true;
       quizView.hidden = false;
       renderQuestion();

@@ -371,6 +371,8 @@
     }
     .results h1 { font-size: 31px; }
     .results-copy { max-width: 360px; margin: 11px auto 23px; color: var(--muted); }
+    .results-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .copy-status { min-height: 20px; margin: 12px 0 0; color: var(--muted); font-size: 13px; }
     .result-score {
       display: inline-flex;
       align-items: baseline;
@@ -657,9 +659,29 @@
         <h1>${headline}</h1>
         <p class="results-copy">${message}</p>
         <div class="result-score">${score}<small>out of ${questions.length} correct</small></div>
-        <div><button class="primary" id="restart-button" type="button">Play again <span aria-hidden="true">↻</span></button></div>
+        <div class="results-actions">
+          <button class="primary" id="restart-button" type="button">Play again <span aria-hidden="true">↻</span></button>
+          <button class="secondary" id="copy-result-button" type="button">Copy result</button>
+        </div>
+        <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
       `;
       document.querySelector("#restart-button").addEventListener("click", restartQuiz);
+      document.querySelector("#copy-result-button").addEventListener("click", copyResult);
+    }
+
+    async function copyResult() {
+      const copyStatus = document.querySelector("#copy-status");
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") {
+        copyStatus.textContent = "Could not copy your result. Clipboard access is unavailable.";
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(`I scored ${score} out of ${questions.length} on the Space Quiz!`);
+        copyStatus.textContent = "Result copied to clipboard!";
+      } catch {
+        copyStatus.textContent = "Could not copy your result. Clipboard access was denied.";
+      }
     }
 
     function restartQuiz() {

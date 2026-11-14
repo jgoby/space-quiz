@@ -379,13 +379,19 @@
       display: inline-flex;
       align-items: baseline;
       gap: 7px;
-      margin-bottom: 25px;
       color: var(--accent);
       font-size: 34px;
       font-weight: 800;
       letter-spacing: -.04em;
     }
     .result-score small { color: var(--muted); font-size: 15px; font-weight: 600; letter-spacing: 0; }
+    .result-accuracy {
+      margin: 6px 0 25px;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
 
     .sr-only {
       position: absolute;
@@ -653,14 +659,14 @@
     function showResults() {
       const elapsedSeconds = Math.floor((performance.now() - missionStartedAt) / 1000);
       const missionDuration = formatMissionDuration(elapsedSeconds);
-      const percentage = score / questions.length;
-      const reaction = percentage === 1 ? "🏆" : percentage >= .7 ? "🚀" : percentage >= .4 ? "🌟" : "🪐";
-      const headline = percentage === 1 ? "Out of this world!" : percentage >= .7 ? "Stellar work!" : percentage >= .4 ? "Nice exploring!" : "Keep reaching for the stars!";
-      const message = percentage === 1
+      const percentage = Math.round((score / questions.length) * 100);
+      const reaction = percentage === 100 ? "🏆" : percentage >= 70 ? "🚀" : percentage >= 40 ? "🌟" : "🪐";
+      const headline = percentage === 100 ? "Out of this world!" : percentage >= 70 ? "Stellar work!" : percentage >= 40 ? "Nice exploring!" : "Keep reaching for the stars!";
+      const message = percentage === 100
         ? "A perfect mission. You really know your way around the cosmos."
-        : percentage >= .7
+        : percentage >= 70
           ? "You navigated the universe like a pro. Ready for another orbit?"
-          : percentage >= .4
+          : percentage >= 40
             ? "Every great explorer learns along the way. Your next mission awaits."
             : "The universe is full of surprises. Take another trip and see what you discover.";
       quizView.hidden = true;
@@ -673,6 +679,7 @@
         <p class="results-copy">${message}</p>
         <p class="result-duration">Mission duration: <strong>${missionDuration}</strong></p>
         <div class="result-score">${score}<small>out of ${questions.length} correct</small></div>
+        <div class="result-accuracy" aria-label="${percentage}% accuracy">${percentage}% accuracy</div>
         <div class="results-actions">
           <button class="primary" id="restart-button" type="button">Play again <span aria-hidden="true">↻</span></button>
           <button class="secondary" id="copy-result-button" type="button">Copy result</button>
@@ -691,7 +698,8 @@
       }
 
       try {
-        await navigator.clipboard.writeText(`I scored ${score} out of ${questions.length} on the Space Quiz!`);
+        const percentage = Math.round((score / questions.length) * 100);
+        await navigator.clipboard.writeText(`I scored ${score} out of ${questions.length} (${percentage}%) on the Space Quiz!`);
         copyStatus.textContent = "Result copied to clipboard!";
       } catch {
         copyStatus.textContent = "Could not copy your result. Clipboard access was denied.";
